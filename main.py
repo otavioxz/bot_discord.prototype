@@ -16,11 +16,16 @@ async def download_video(data: dict):
     filename = f"video_{unique}.mp4"
 
     ydl_opts = {
-    "format": "bestvideo*+bestaudio/best",
+    "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
     "outtmpl": filename,
     "noplaylist": True,
     "merge_output_format": "mp4",
-    "ignoreerrors": True
+    "postprocessors": [
+            {
+                "key": "FFmpegVideoConvertor",
+                "preferedformat": "mp4"
+            }
+        ]
     }
 
 
