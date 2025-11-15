@@ -16,11 +16,13 @@ async def download_video(data: dict):
     filename = f"video_{unique}.mp4"
 
     ydl_opts = {
-        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4/best",
-        "outtmpl": filename,
-        "noplaylist": True,
-        "merge_output_format": "mp4"
+    "format": "bestvideo*+bestaudio/best",
+    "outtmpl": filename,
+    "noplaylist": True,
+    "merge_output_format": "mp4",
+    "ignoreerrors": True
     }
+
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
