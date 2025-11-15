@@ -15,16 +15,19 @@ async def download_video(data: dict):
     unique = uuid.uuid4().hex[:8]
     filename = f"video_{unique}.mp4"
 
-    # formato que NÃO precisa de ffmpeg
+    # Seleção automática de formato sem ffmpeg
     if "instagram.com" in url:
-        formato = "mp4"                 # fallback seguro para Instagram
+        formato = "mp4"  # Instagram precisa disso
+    elif "tiktok.com" in url:
+        formato = "mp4"  # TikTok baixa direto em MP4 sem ffmpeg
     else:
-        formato = "18"                  # YouTube MP4 360p com áudio
+        formato = "18"   # YouTube MP4 360p com áudio
 
     ydl_opts = {
         "format": formato,
         "outtmpl": filename,
         "noplaylist": True,
+        "merge_output_format": "mp4",  # evita erro mesmo sem ffmpeg
     }
 
     try:
