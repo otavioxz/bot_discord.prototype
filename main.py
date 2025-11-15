@@ -15,19 +15,17 @@ async def download_video(data: dict):
     unique = uuid.uuid4().hex[:8]
     filename = f"video_{unique}.mp4"
 
-    ydl_opts = {
-    "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best",
-    "outtmpl": filename,
-    "noplaylist": True,
-    "merge_output_format": "mp4",
-    "postprocessors": [
-            {
-                "key": "FFmpegVideoConvertor",
-                "preferedformat": "mp4"
-            }
-        ]
-    }
+    # formato que NÃO precisa de ffmpeg
+    if "instagram.com" in url:
+        formato = "mp4"                 # fallback seguro para Instagram
+    else:
+        formato = "18"                  # YouTube MP4 360p com áudio
 
+    ydl_opts = {
+        "format": formato,
+        "outtmpl": filename,
+        "noplaylist": True,
+    }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -35,7 +33,6 @@ async def download_video(data: dict):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-    # expõe o arquivo na URL /file/<nome>
     return {
         "success": True,
         "file": f"/file/{filename}"
