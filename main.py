@@ -1,48 +1,48 @@
-from fastapi import FastAPI
-from fastapi.responses import FileResponse, JSONResponse
+from flask import Flask, request, jsonify, send_file
 import yt_dlp
 import uuid
 import os
 
-app = FastAPI()
+app = Flask(__name__)
 
-@app.post("/download")
-async def download_video(data: dict):
+BASE_DIR = "files"
+os.makedirs(BASE_DIR, exist_ok=True)
+
+@app.route("/download", methods=["POST"])
+def download():
+    data = request.json
     url = data.get("url")
+
     if not url:
-        return JSONResponse({"success": False, "error": "Missing URL"}, status_code=400)
+        return jsonify(success=False, error="URL não fornecida")
 
-    unique = uuid.uuid4().hex[:8]
-    filename = f"video_{unique}.mp4"
-
-    # Seleção automática de formato sem ffmpeg
-    if "instagram.com" in url:
-        formato = "mp4"  # Instagram precisa disso
-    elif "tiktok.com" in url:
-        formato = "mp4"  # TikTok baixa direto em MP4 sem ffmpeg
-    else:
-        formato = "18"   # YouTube MP4 360p com áudio
+    video_id = str(uuid.uuid4())
+    output = f"{BASE_DIR}/{video_id}.mp4"
 
     ydl_opts = {
-        "format": formato,
-        "outtmpl": filename,
-        "noplaylist": True,
-        "merge_output_format": "mp4",  # evita erro mesmo sem ffmpeg
+        "format": "mp4",
+        "outtmpl": output,
+        "quiet": True
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
     except Exception as e:
-        return {"success": False, "error": str(e)}
+        return jsonify(success=False, error=str(e))
 
-    return {
-        "success": True,
-        "file": f"/file/{filename}"
-    }
+    return jsonify(
+        success=True,
+        file=f"/file/{video_id}"
+    )
 
-@app.get("/file/{filename}")
-async def serve_file(filename: str):
-    if not os.path.exists(filename):
-        return JSONResponse({"error": "File not found"}, status_code=404)
-    return FileResponse(filename, media_type="video/mp4")
+@app.route("/file/<video_id>")
+def file(video_id):
+    path = f"{BASE_DIR}/{video_id}.mp4"
+    if not os.path.exists(path):
+        return "Arquivo não encontrado", 404
+
+    return send_file(path, mimetype="video/mp4")
+
+if __name__ == "__main__":
+    app.run()
