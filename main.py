@@ -24,14 +24,29 @@ def download():
         "outtmpl": output,
         "quiet": True,
         "merge_output_format": "mp4",
+
+        # 🔥 CONTORNO REAL DO BLOQUEIO
         "extractor_args": {
             "youtube": {
-                "player_client": ["android", "web_embedded"]
+                "player_client": ["android", "ios"],
+                "skip": ["dash", "hls"]
             }
         },
+
+        # 🔥 SIMULA APP MÓVEL
+        "user_agent": (
+            "Mozilla/5.0 (Linux; Android 11; Pixel 5) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Mobile Safari/537.36"
+        ),
+
+        # 🔥 ESSENCIAL EM DATACENTER
+        "force_ipv4": True,
+
+        # estabilidade
         "noplaylist": True,
-        "retries": 3,
-        "fragment_retries": 3,
+        "retries": 5,
+        "fragment_retries": 5,
     }
 
     try:
