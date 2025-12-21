@@ -20,21 +20,33 @@ def download():
     output = f"{BASE_DIR}/{video_id}.mp4"
 
     ydl_opts = {
-        "format": "mp4",
+        "format": "bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4",
         "outtmpl": output,
-        "quiet": True
+        "quiet": True,
+        "merge_output_format": "mp4",
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "web_embedded"]
+            }
+        },
+        "noplaylist": True,
+        "retries": 3,
+        "fragment_retries": 3,
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
     except Exception as e:
-        return jsonify(success=False, error=str(e))
+        msg = str(e)
+        if "Sign in to confirm you’re not a bot" in msg:
+            return jsonify(
+                success=False,
+                error="❌ Este vídeo exige login no YouTube e não pode ser baixado."
+            )
+        return jsonify(success=False, error=msg)
 
-    return jsonify(
-        success=True,
-        file=f"/file/{video_id}"
-    )
+    return jsonify(success=True, file=f"/file/{video_id}")
 
 @app.route("/file/<video_id>")
 def file(video_id):
@@ -45,4 +57,4 @@ def file(video_id):
     return send_file(path, mimetype="video/mp4")
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)
